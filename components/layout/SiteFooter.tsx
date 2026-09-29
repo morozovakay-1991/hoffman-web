@@ -14,7 +14,7 @@ export function SiteFooter() {
           <p className="text-[32px] leading-[1.15] tracking-[-1.28px]">hoffman</p>
           <p className="mt-4">© 1991-{new Date().getFullYear()} Hoffman Institute International</p>
           <div className="mt-[26px]">
-            <StoreBadges />
+            <StoreBadges id="download-app" />
           </div>
         </div>
 

@@ -1,20 +1,24 @@
-import Link from "next/link";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { AboutSection } from "@/features/landing/components/AboutSection";
+import { AccessSection } from "@/features/landing/components/AccessSection";
+import { DOWNLOAD_SECTION_ID, DownloadSection } from "@/features/landing/components/DownloadSection";
+import { FeaturesSection } from "@/features/landing/components/FeaturesSection";
+import { Hero } from "@/features/landing/components/Hero";
+import { PricingSection } from "@/features/landing/components/PricingSection";
 
+// Лендинг (Figma: Mobile-app-UI, кадр 1313:2343). Шапка светлая и лежит поверх фото hero.
 export default function LandingPage() {
   return (
-    <section className="mx-auto flex max-w-5xl flex-col items-start gap-6 px-6 py-24">
-      <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-        Hoffman
-      </h1>
-      <p className="max-w-xl text-brand-600 dark:text-brand-300">
-        Каркас веб-приложения. Здесь появится описание продукта.
-      </p>
-      <Link
-        href="/pricing"
-        className="rounded-full bg-brand-black px-5 py-2.5 text-sm font-medium text-brand-white transition-colors hover:bg-brand-800 dark:bg-brand-white dark:text-brand-black dark:hover:bg-brand-200"
-      >
-        Смотреть тарифы
-      </Link>
-    </section>
+    <>
+      <SiteHeader tone="light" downloadHref={`#${DOWNLOAD_SECTION_ID}`} />
+      <main className="flex-1">
+        <Hero />
+        <AboutSection />
+        <FeaturesSection />
+        <DownloadSection />
+        <AccessSection />
+        <PricingSection />
+      </main>
+    </>
   );
 }
