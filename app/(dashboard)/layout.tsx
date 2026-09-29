@@ -11,6 +11,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className="flex flex-col gap-3 text-sm text-brand-600 dark:text-brand-300">
           <Link href="/dashboard">Личный кабинет</Link>
         </nav>
+        <form action="/api/auth/logout" method="post" className="mt-auto">
+          <button type="submit" className="text-sm text-brand-500 underline">
+            Выйти
+          </button>
+        </form>
       </aside>
       <main className="flex-1 px-6 py-8">{children}</main>
     </div>
