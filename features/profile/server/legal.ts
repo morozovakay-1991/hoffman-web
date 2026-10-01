@@ -1,13 +1,17 @@
 import "server-only";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import sanitizeHtml from "sanitize-html";
 import { laravelFetch, readJson } from "@/lib/server/laravel";
 import type { LegalDocument, LegalDocumentSummary } from "../types";
 
 // Юридические документы публичные (без токена). Оба эндпоинта — Laravel API
 // Resources, поэтому полезная нагрузка лежит в `data`.
+// Тексты редактируются в админке, поэтому страницы рендерятся на каждый запрос,
+// а не при сборке: правка документа видна сразу, и `next build` не зависит от backend.
 
 async function legalGet<T>(path: string): Promise<T> {
+  await connection();
   const response = await laravelFetch(path);
   if (!response) throw new Error("Hoffman API is unavailable");
   // Неизвестный slug — 404 NOT_FOUND от route-model binding.

@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_rethrow } from "next/navigation";
 
 // Клиент Laravel API для BFF-прокси (см. docs/plan.md). Вызывается только на
 // сервере Next.js: браузер обращается к нашим Route Handlers, а не к Laravel.
@@ -39,7 +40,11 @@ export async function laravelFetch(
       cache: "no-store",
       signal: AbortSignal.timeout(15_000),
     });
-  } catch {
+  } catch (error) {
+    // fetch с `no-store` при пререндере бросает служебную ошибку Next.js, чтобы
+    // перевести маршрут в динамический режим. Её нельзя глотать: иначе она
+    // превращается в «backend недоступен» и роняет `next build`.
+    unstable_rethrow(error);
     return null;
   }
 }
