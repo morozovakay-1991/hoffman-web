@@ -195,11 +195,16 @@ describe("ChangeEmailDialog", () => {
     render(<ChangeEmailDialog currentEmail={null} onClose={vi.fn()} onSaved={vi.fn()} />);
     await user.type(screen.getByLabelText("Новый email"), "new@example.com");
     await user.click(screen.getByRole("button", { name: "Сохранить" }));
+    // Ответ fetch (Response.json) резолвится не за один микротик — ждём, пока
+    // запрос завершится и запустит обратный отсчёт, иначе тики уйдут впустую.
+    await screen.findByText(/Отправить еще раз через \d+с/);
 
     for (let i = 0; i < 59; i++) await act(() => vi.advanceTimersByTime(1000));
     await user.click(screen.getByRole("button", { name: "Отправить еще раз" }));
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(requestBody(fetchMock, 1)).toEqual({ new_email: "new@example.com" });
+    // Пока повторный запрос в полёте, «Изменить Email» disabled и клик игнорируется.
+    await screen.findByText(/Отправить еще раз через \d+с/);
 
     await user.click(screen.getByRole("button", { name: "Изменить Email" }));
     expect(screen.getByRole("dialog", { name: "Email" })).toBeInTheDocument();
