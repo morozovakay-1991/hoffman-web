@@ -27,7 +27,7 @@ test("регистрация по email и паролю ведёт в личны
   await page.getByRole("button", { name: "Зарегистрироваться" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("Здравствуйте, Anna!")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Имя пользователя/ })).toContainText("Anna");
   await expectHttpOnlySession(page);
 });
 
@@ -42,10 +42,13 @@ test("вход по email и паролю, затем выход", async ({ page
   await page.getByRole("button", { name: "Войти", exact: true }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("Здравствуйте, Demo!")).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Имя пользователя/ })).toContainText("Demo");
   await expectHttpOnlySession(page);
 
-  await page.getByRole("button", { name: "Выйти" }).click();
+  await page.getByRole("banner").getByRole("button", { name: "Выйти" }).click();
+  const dialog = page.getByRole("dialog", { name: "Вы уверены?" });
+  await expect(dialog).toContainText("Выйти из аккаунта?");
+  await dialog.getByRole("button", { name: "Выйти" }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login$/);

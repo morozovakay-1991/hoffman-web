@@ -63,6 +63,9 @@ const config: Config = {
       backgroundImage: {
         glass:
           "linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 51.443%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 100%)",
+        // Модалки личного кабинета (Figma 1252:12722, 1274:7564): тот же блик поверх light-blue.
+        "glass-tint":
+          "linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.1) 51.443%, rgba(255, 255, 255, 0.2) 100%), linear-gradient(90deg, #E3F0F9 0%, #E3F0F9 100%)",
       },
     },
   },

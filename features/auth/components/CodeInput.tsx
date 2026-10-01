@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, type ClipboardEvent, type KeyboardEvent } from "react";
+import type { FieldTone } from "./ui";
 
 export const CODE_LENGTH = 6;
 
@@ -14,10 +15,12 @@ type CodeInputProps = {
   error?: string;
   errorId?: string;
   disabled?: boolean;
+  /** `onTint` — белые ячейки на светло-голубой модалке личного кабинета. */
+  tone?: FieldTone;
 };
 
 /** Одноразовый код: 6 ячеек по одной цифре, автопереход, вставка целого кода. */
-export function CodeInput({ value, onChange, error, errorId, disabled }: CodeInputProps) {
+export function CodeInput({ value, onChange, error, errorId, disabled, tone = "default" }: CodeInputProps) {
   const cells = useRef<(HTMLInputElement | null)[]>([]);
 
   function focusCell(index: number) {
@@ -94,7 +97,9 @@ export function CodeInput({ value, onChange, error, errorId, disabled }: CodeInp
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
-          className={`h-[53px] w-full min-w-0 rounded-[3px] border-[0.5px] bg-hoffman-light-blue text-center text-[17px] leading-[1.4] text-hoffman-black outline-none ${
+          className={`h-[53px] w-full min-w-0 rounded-[3px] border-[0.5px] ${
+            tone === "onTint" ? "bg-white" : "bg-hoffman-light-blue"
+          } text-center text-[17px] leading-[1.4] text-hoffman-black outline-none ${
             error ? "border-hoffman-fire" : "border-transparent focus:border-hoffman-black"
           }`}
         />

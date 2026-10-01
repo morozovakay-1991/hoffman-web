@@ -9,13 +9,36 @@ import { PASSWORD_RULES } from "../validation";
 /** Ссылка из макета (`link/Variant7`): 12px, cherry, подчёркнутая. */
 export const linkClass = "text-[12px] leading-[1.15] font-semibold text-hoffman-cherry underline";
 
+/**
+ * `onTint` — поле на светло-голубом фоне модалок личного кабинета (Figma 1252:12736,
+ * 1254:12973): белая подложка и текст 20/28 вместо светло-голубой и 12px.
+ */
+export type FieldTone = "default" | "onTint";
+
+export const fieldToneClass: Record<FieldTone, string> = {
+  default: "bg-hoffman-light-blue text-[12px] leading-[1.15] tracking-[-0.48px]",
+  onTint: "bg-white text-[20px] leading-[28px]",
+};
+
 type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> & {
   label: string;
   error?: string;
   hint?: ReactNode;
+  tone?: FieldTone;
+  /** Подпись только для скринридеров — когда её роль играет заголовок модалки. */
+  hideLabel?: boolean;
 };
 
-export function TextField({ label, error, hint, className, required = true, ...props }: TextFieldProps) {
+export function TextField({
+  label,
+  error,
+  hint,
+  className,
+  required = true,
+  tone = "default",
+  hideLabel = false,
+  ...props
+}: TextFieldProps) {
   const id = useId();
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
@@ -23,12 +46,12 @@ export function TextField({ label, error, hint, className, required = true, ...p
 
   return (
     <div className="flex flex-col">
-      <div className="flex h-10 items-center gap-1">
+      <div className={hideLabel ? "sr-only" : "flex h-10 items-center gap-1"}>
         <label htmlFor={id} className="text-[12px] leading-[26px] font-medium">
           {label}
         </label>
         {/* Звёздочка вне <label>, чтобы доступное имя поля оставалось «Email», а не «Email *». */}
-        {required && (
+        {required && !hideLabel && (
           <span aria-hidden="true" className="text-[17px] leading-[1.4]">
             *
           </span>
@@ -39,7 +62,9 @@ export function TextField({ label, error, hint, className, required = true, ...p
         aria-required={required || undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`mt-[6px] h-[53px] w-full rounded-[3px] border-[0.5px] bg-hoffman-light-blue p-[10px] text-[12px] leading-[1.15] tracking-[-0.48px] text-hoffman-black outline-none placeholder:text-hoffman-soft-black ${
+        className={`h-[53px] w-full rounded-[3px] border-[0.5px] p-[10px] text-hoffman-black outline-none placeholder:text-hoffman-soft-black ${
+          hideLabel ? "" : "mt-[6px]"
+        } ${fieldToneClass[tone]} ${
           error ? "border-hoffman-fire" : "border-transparent focus:border-hoffman-black"
         } ${className ?? ""}`}
         {...props}

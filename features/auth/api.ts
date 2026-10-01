@@ -5,20 +5,34 @@ import type { ApiError, AuthUser } from "./types";
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; error: ApiError };
 
-export async function postJson<T>(url: string, body: unknown): Promise<ApiResult<T>> {
+export function postJson<T>(url: string, body: unknown): Promise<ApiResult<T>> {
+  return requestJson<T>("POST", url, body);
+}
+
+/**
+ * JSON-запрос к собственному BFF. Тело всегда отправляется как `application/json`
+ * (пустой объект, если `body` не задан): BFF принимает только такие запросы —
+ * HTML-форма с чужого сайта их не отправит.
+ */
+export async function requestJson<T>(
+  method: "GET" | "POST" | "PATCH" | "DELETE",
+  url: string,
+  body: unknown = {},
+): Promise<ApiResult<T>> {
   let response: Response;
   try {
     response = await fetch(url, {
-      method: "POST",
+      method,
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body),
+      body: method === "GET" ? undefined : JSON.stringify(body),
       credentials: "same-origin",
     });
   } catch {
     return { ok: false, error: { status: 0, code: "NETWORK", fields: {} } };
   }
 
-  const data = await response.json().catch(() => null);
+  // 204 (DELETE /profile) приходит без тела.
+  const data = response.status === 204 ? null : await response.json().catch(() => null);
   if (response.ok) return { ok: true, data: data as T };
 
   const error = data?.error ?? {};

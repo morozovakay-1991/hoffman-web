@@ -1,12 +1,16 @@
-import { requireUser } from "@/features/auth/server/currentUser";
+import type { Metadata } from "next";
+import { PersonalDataPanel } from "@/features/profile/components/PersonalDataPanel";
+import { ProfilePanel } from "@/features/profile/components/ui";
+import { requireProfile } from "@/features/profile/server/profile";
+
+export const metadata: Metadata = { title: "Личный кабинет — Hoffman" };
 
 export default async function DashboardPage() {
-  const user = await requireUser();
+  const profile = await requireProfile();
 
   return (
-    <section>
-      <h1 className="text-2xl font-semibold tracking-tight">Личный кабинет</h1>
-      <p className="mt-2 text-brand-600 dark:text-brand-300">Здравствуйте, {user.name}!</p>
-    </section>
+    <ProfilePanel title="Личные данные">
+      <PersonalDataPanel profile={{ name: profile.name, email: profile.email }} />
+    </ProfilePanel>
   );
 }
