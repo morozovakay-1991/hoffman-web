@@ -1,23 +1,32 @@
-import Link from "next/link";
-import { Logo } from "@/components/brand/Logo";
+import { SiteFooter } from "@/components/layout/SiteFooter";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { AccountHeaderNav } from "@/features/profile/components/AccountHeaderNav";
+import { GraduateBlock } from "@/features/profile/components/GraduateBlock";
+import { ProfileMenu } from "@/features/profile/components/ProfileMenu";
+import { getVerificationRequest, requireProfile } from "@/features/profile/server/profile";
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+// Личный кабинет (Figma 1273:5793): шапка и футер — общие с публичными страницами
+// и экранами входа; слева блок выпускника и меню, справа — раздел (page.tsx).
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const profile = await requireProfile();
+  // Прошлая заявка нужна только форме верификации — подтверждённому выпускнику не запрашиваем.
+  const previousRequest = profile.graduate_status === "confirmed" ? null : await getVerificationRequest();
+
   return (
-    <div className="flex min-h-full flex-1">
-      <aside className="hidden w-56 flex-col gap-6 border-r border-brand-200 px-6 py-8 dark:border-brand-800 sm:flex">
-        <Link href="/dashboard">
-          <Logo />
-        </Link>
-        <nav className="flex flex-col gap-3 text-sm text-brand-600 dark:text-brand-300">
-          <Link href="/dashboard">Личный кабинет</Link>
-        </nav>
-        <form action="/api/auth/logout" method="post" className="mt-auto">
-          <button type="submit" className="text-sm text-brand-500 underline">
-            Выйти
-          </button>
-        </form>
-      </aside>
-      <main className="flex-1 px-6 py-8">{children}</main>
+    <div className="flex min-h-full flex-1 flex-col bg-white text-hoffman-black">
+      <SiteHeader nav={<AccountHeaderNav />} />
+      <div className="flex flex-1 flex-col lg:flex-row">
+        <aside className="flex flex-col gap-[54px] px-6 py-[54px] lg:w-[716px] lg:shrink-0">
+          <div className="lg:max-w-[590px]">
+            <GraduateBlock status={profile.graduate_status} previousRequest={previousRequest} />
+          </div>
+          <div className="lg:max-w-[590px]">
+            <ProfileMenu />
+          </div>
+        </aside>
+        <main className="flex flex-1 flex-col">{children}</main>
+      </div>
+      <SiteFooter />
     </div>
   );
 }
