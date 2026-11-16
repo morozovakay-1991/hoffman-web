@@ -5,6 +5,7 @@ import { apiError, jsonResponse, mockFetch, requestBody } from "@/features/auth/
 import { DeleteAccountPanel } from "./DeleteAccountPanel";
 import { GraduateBlock } from "./GraduateBlock";
 import { LogoutButton } from "./LogoutButton";
+import { PersonalDataPanel } from "./PersonalDataPanel";
 import { ProfileMenu } from "./ProfileMenu";
 
 const router = { replace: vi.fn(), refresh: vi.fn() };
@@ -171,5 +172,43 @@ describe("ProfileMenu", () => {
     expect(screen.getByRole("link", { name: "Правовая информация" })).not.toHaveAttribute("aria-current");
     expect(screen.queryByRole("link", { name: "Подписка" })).not.toBeInTheDocument();
     expect(screen.getByText("Подписка")).toBeInTheDocument();
+  });
+});
+
+describe("Модалки кабинета: доступность", () => {
+  it("диалог подписан и описан, фон inert, Esc закрывает и возвращает фокус на кнопку", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<LogoutButton variant="menu" />);
+    const opener = screen.getByRole("button", { name: "Выйти" });
+    await user.click(opener);
+
+    const dialog = screen.getByRole("dialog", { name: "Вы уверены?" });
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAccessibleDescription("Выйти из аккаунта?");
+    expect(screen.getByRole("button", { name: "Отменить" })).toHaveFocus();
+    // Модалка в портале, остальная страница недоступна.
+    expect(container).not.toContainElement(dialog);
+    expect(container).toHaveAttribute("inert");
+
+    await user.tab({ shift: true });
+    await user.tab({ shift: true });
+    await user.tab({ shift: true });
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(container).not.toHaveAttribute("inert");
+    expect(opener).toHaveFocus();
+  });
+
+  it("модалка с autoFocus поля возвращает фокус на открывшую её строку", async () => {
+    const user = userEvent.setup();
+    render(<PersonalDataPanel profile={{ name: "Мария", email: "maria@example.com" }} />);
+    const row = screen.getByRole("button", { name: /^Имя пользователя/ });
+    await user.click(row);
+    expect(screen.getByRole("textbox", { name: "Имя" })).toHaveFocus();
+
+    await user.click(screen.getByRole("button", { name: "Закрыть" }));
+    expect(row).toHaveFocus();
   });
 });

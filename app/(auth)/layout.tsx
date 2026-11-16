@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <div className="absolute inset-y-0 left-0 w-[613px] bg-white/80" />
         </div>
         <SiteHeader />
-        <main className="relative flex-1 px-6 pt-16 pb-16 lg:w-[613px]">
+        <main id="main" tabIndex={-1} className="relative flex-1 px-[16px] pt-16 pb-16 outline-none lg:w-[613px] lg:px-6">
           <div className="lg:max-w-[565px]">{children}</div>
         </main>
       </div>

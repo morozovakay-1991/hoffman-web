@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ScrollRegion } from "@/components/layout/ScrollRegion";
 
 /**
  * Скриншот экрана в макете iPhone (компонент «iphone 17 pro» в Figma):
@@ -42,8 +43,8 @@ type Feature = {
 function FeatureCaption({ title, lines, descriptionWidth }: Feature) {
   return (
     <div className="flex flex-col items-center gap-4 text-center" style={{ width: descriptionWidth }}>
-      <h3 className="text-[28px] leading-[34px] font-normal">{title}</h3>
-      <p className="text-[14px] leading-[1.5] font-medium">
+      <h3 className="text-[1.75rem] leading-[2.125rem] font-normal">{title}</h3>
+      <p className="text-[0.875rem] leading-[1.5] font-medium">
         {lines.map((line, i) => (
           <span key={line}>
             {i > 0 && <br />}
@@ -62,15 +63,22 @@ function FeatureCaption({ title, lines, descriptionWidth }: Feature) {
 export function FeaturesSection() {
   return (
     <section className="overflow-hidden pt-[67px] pb-[47px]">
-      <div className="px-6 lg:px-[30px]">
-        <h2 className="text-[48px] leading-[1.15] font-normal lg:text-[80px]">Возможности</h2>
-        <p className="mt-4 max-w-[390px] text-[14px] leading-[1.5] font-medium lg:ml-2">
+      <div className="px-4 lg:px-[30px]">
+        <h2 className="text-[3rem] leading-[1.15] font-normal lg:text-[5rem]">Возможности</h2>
+        <p className="mt-4 max-w-[390px] text-[0.875rem] leading-[1.5] font-medium lg:ml-2">
           Четыре инструмента для системной работы над собой <br className="hidden lg:inline" />– каждый день, в
           своем темпе.
         </p>
       </div>
 
-      <div className="mt-7 grid grid-cols-1 justify-items-center gap-y-16 md:grid-cols-2 xl:grid-cols-[282px_282px_445px_282px] xl:justify-center xl:gap-x-[30px]">
+      {/*
+       * До lg — горизонтальный слайдер (макета нет): карточки по ширине телефона,
+       * следующая выглядывает справа, прокрутка только внутри блока. С lg — сетка макета.
+       */}
+      <ScrollRegion
+        label="Возможности приложения, листаются по горизонтали"
+        className="mt-7 flex snap-x snap-mandatory scroll-px-4 gap-2 overflow-x-auto px-4 pb-4 focus-visible:outline-offset-[-2px] lg:grid lg:snap-none lg:grid-cols-2 lg:justify-items-center lg:gap-x-0 lg:gap-y-16 lg:overflow-visible lg:px-0 lg:pb-0 xl:grid-cols-[282px_282px_445px_282px] xl:justify-center xl:gap-x-[30px]"
+      >
         <FeatureColumn
           phones={
             <div className="pt-9">
@@ -104,7 +112,7 @@ export function FeaturesSection() {
         />
         <FeatureColumn
           phones={
-            <div className="relative h-[716.38px] w-[445.48px] shrink-0 origin-top max-sm:scale-[0.85]">
+            <div className="relative h-[716.38px] w-[445.48px] shrink-0 origin-top max-lg:[zoom:0.62] md:max-lg:[zoom:0.72] lg:max-xl:scale-[0.85]">
               <div className="absolute top-0 left-0 flex h-[628.12px] w-[366.3px] items-center justify-center">
                 <div className="rotate-[-8.47deg]">
                   <PhoneMockup
@@ -144,15 +152,18 @@ export function FeaturesSection() {
             descriptionWidth: 261,
           }}
         />
-      </div>
+      </ScrollRegion>
     </section>
   );
 }
 
-/** Колонка: область макетов высотой 716px (подписи в макете выровнены по одной линии) и подпись. */
+/**
+ * Колонка: область макетов высотой 716px (подписи в макете выровнены по одной линии) и подпись.
+ * В слайдере — карточка шириной не меньше телефона (282px) и 85% ширины (45% с md).
+ */
 function FeatureColumn({ phones, feature }: { phones: React.ReactNode; feature: Feature }) {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center max-lg:w-[max(282px,85%)] max-lg:shrink-0 max-lg:snap-start md:max-lg:w-[45%]">
       <div className="flex h-[716.38px] justify-center">{phones}</div>
       <FeatureCaption {...feature} />
     </div>

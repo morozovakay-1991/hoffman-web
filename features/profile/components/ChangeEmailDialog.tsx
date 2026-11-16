@@ -5,7 +5,7 @@ import { useEffect, useId, useState, type FormEvent } from "react";
 import { isEmailTaken } from "@/features/auth/api";
 import { CodeInput, emptyCode } from "@/features/auth/components/CodeInput";
 import { RESEND_COOLDOWN_SECONDS } from "@/features/auth/components/ForgotPasswordFlow";
-import { FieldError, FormAlert, SubmitButton, TextField, linkClass } from "@/features/auth/components/ui";
+import { FieldError, FormAlert, SubmitButton, TextField, useFocusFirstInvalid, linkClass } from "@/features/auth/components/ui";
 import { AuthErrorText, tooManyAttemptsWait } from "@/features/auth/messages";
 import type { ApiError } from "@/features/auth/types";
 import { validateCode, validateEmail } from "@/features/auth/validation";
@@ -53,6 +53,7 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
   const [code, setCode] = useState(emptyCode);
   const [errors, setErrors] = useState<Partial<Record<"email" | "code" | "form", string>>>({});
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
   const [secondsLeft, restartCooldown] = useCountdown(RESEND_COOLDOWN_SECONDS);
   const codeErrorId = useId();
 
@@ -94,7 +95,10 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
       validateEmail(trimmed) ??
       (currentEmail && currentEmail.toLowerCase() === trimmed.toLowerCase() ? ProfileText.sameEmail : undefined);
     setErrors({ email: emailError });
-    if (emailError) return;
+    if (emailError) {
+      focusInvalid();
+      return;
+    }
     if (await requestCode()) setStep("code");
   }
 
@@ -103,7 +107,10 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
     const value = code.join("");
     const codeError = validateCode(value);
     setErrors({ code: codeError });
-    if (codeError) return;
+    if (codeError) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await profileApi.confirmEmail(value);
@@ -126,7 +133,7 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
         onClose={onClose}
         busy={loading}
       >
-        <form noValidate onSubmit={submitCode} className="flex flex-col gap-[54px]">
+        <form ref={formRef} noValidate onSubmit={submitCode} className="flex flex-col gap-[54px]">
           <div className="flex max-w-[362px] flex-col gap-2">
             <CodeInput
               tone="onTint"
@@ -141,11 +148,11 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
             />
             {errors.code && <FieldError id={codeErrorId}>{errors.code}</FieldError>}
           </div>
-          <div className="flex flex-col items-start gap-4">
+          <div className="flex flex-col items-start gap-[30px] lg:gap-4">
             <FormAlert message={errors.form} />
             <SubmitButton loading={loading}>Отправить код</SubmitButton>
             {secondsLeft > 0 ? (
-              <p className="text-[13px] leading-[18px] text-hoffman-soft-black" aria-live="polite">
+              <p className="text-[0.8125rem] leading-[1.125rem] text-hoffman-soft-black">
                 Отправить еще раз через {secondsLeft}с
               </p>
             ) : (
@@ -172,7 +179,7 @@ export function ChangeEmailDialog({ currentEmail, onClose, onSaved }: { currentE
 
   return (
     <ProfileModal title="Email" onClose={onClose} busy={loading} tallTitle>
-      <form noValidate onSubmit={submitEmail} className="flex flex-col gap-[54px]">
+      <form ref={formRef} noValidate onSubmit={submitEmail} className="flex flex-col gap-[54px]">
         <TextField
           label="Новый email"
           hideLabel

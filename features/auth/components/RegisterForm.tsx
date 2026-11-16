@@ -12,7 +12,7 @@ import {
   validatePasswordConfirmation,
 } from "../validation";
 import { ConsentCheckboxes, type Consents } from "./ConsentCheckboxes";
-import { AuthHeading, FormAlert, PasswordRequirements, SubmitButton, TextField } from "./ui";
+import { AuthHeading, FormAlert, PasswordRequirements, SubmitButton, TextField, useFocusFirstInvalid } from "./ui";
 
 type Field = "name" | "email" | "password" | "confirmation";
 type Errors = Partial<Record<Field | "consents" | "form", string>>;
@@ -30,6 +30,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
   const [consents, setConsents] = useState<Consents>({ privacy: false, personalData: false });
   const [errors, setErrors] = useState<Errors>({ form: initialError });
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
 
   function update(field: Field, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -49,7 +50,10 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
       consents: validateConsents(consents),
     };
     setErrors(next);
-    if (Object.values(next).some(Boolean)) return;
+    if (Object.values(next).some(Boolean)) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await authApi.register({
@@ -68,6 +72,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
     const { error } = result;
     if (isEmailTaken(error)) {
       setErrors({ email: AuthErrorText.emailTaken });
+      focusInvalid();
     } else if (error.code === "VALIDATION_ERROR") {
       setErrors({
         name: error.fields.name ? AuthErrorText.nameRequired : undefined,
@@ -75,6 +80,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
         password: error.fields.password ? AuthErrorText.passwordFormat : undefined,
         form: Object.keys(error.fields).length ? undefined : AuthErrorText.unknown,
       });
+      focusInvalid();
     } else {
       setErrors({ form: commonErrorText(error) });
     }
@@ -84,7 +90,7 @@ export function RegisterForm({ initialError }: { initialError?: string }) {
     Object.values(values).every(Boolean) && consents.privacy && consents.personalData;
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="flex flex-col">
+    <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col">
       <AuthHeading title="Регистрация" subtitle="Создайте аккаунт" />
       <div className="mt-8 flex flex-col gap-8 lg:mt-16">
         <FormAlert message={errors.form} />

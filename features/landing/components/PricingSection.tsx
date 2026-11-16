@@ -27,7 +27,7 @@ export function PricingSection() {
   const [consentError, setConsentError] = useState<string>();
 
   return (
-    <section className="border-y-[0.5px] border-hoffman-black bg-hoffman-light-blue px-6 pt-[54px] pb-[54px]">
+    <section className="border-y-[0.5px] border-hoffman-black bg-hoffman-light-blue px-4 pt-[54px] pb-[54px] lg:px-6">
       <SectionIntro label="Тарифы">
         7 дней <Accent>бесплатно,</Accent> дальше на ваш выбор.
       </SectionIntro>
@@ -35,7 +35,7 @@ export function PricingSection() {
       <div className={introColumnClass}>
         <fieldset className="mt-16">
           <legend className="sr-only">Тариф</legend>
-          <div className="flex flex-col gap-6 lg:flex-row">
+          <div className="flex flex-col gap-6 xl:flex-row">
             {(Object.keys(PLANS) as PlanId[]).map((id) => (
               <PlanCard key={id} id={id} selected={plan === id} onSelect={() => setPlan(id)} />
             ))}
@@ -56,7 +56,7 @@ export function PricingSection() {
           >
             Попробовать 7 дней бесплатно
           </ButtonLink>
-          <p className="w-[330px] max-w-full text-[14px] leading-[1.15] font-medium">
+          <p className="w-[330px] max-w-full text-[0.875rem] leading-[1.15] font-medium">
             Далее {PLANS[plan].renewal}. <br />
             Отмена в любой момент.
           </p>
@@ -81,7 +81,7 @@ function PlanCard({ id, selected, onSelect }: { id: PlanId; selected: boolean; o
   const { title, perMonth, badge, oldPrice, price } = PLANS[id];
   return (
     <label
-      className={`relative block h-[168px] w-full cursor-pointer rounded-[3px] border-[0.5px] pt-[63px] pr-4 pl-6 sm:pr-[26px] sm:pl-[34px] has-[:focus-visible]:outline has-[:focus-visible]:outline-1 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-hoffman-black lg:w-[472px] ${
+      className={`relative block min-h-[168px] w-full cursor-pointer rounded-[3px] border-[0.5px] pt-[63px] pr-4 pb-4 pl-6 sm:pr-[26px] sm:pl-[34px] has-[:focus-visible]:outline has-[:focus-visible]:outline-1 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-hoffman-black xl:w-[472px] ${
         selected ? "border-hoffman-black bg-white" : "border-white bg-hoffman-blue-tint"
       }`}
     >
@@ -95,22 +95,22 @@ function PlanCard({ id, selected, onSelect }: { id: PlanId; selected: boolean; o
         className="sr-only"
       />
       {badge && (
-        <span className="absolute -top-3 left-6 rounded-[3px] bg-hoffman-black px-2.5 py-1 text-[14px] leading-[1.15] font-medium text-white">
+        <span className="absolute -top-3 left-6 rounded-[3px] bg-hoffman-black px-2.5 py-1 text-[0.875rem] leading-[1.15] font-medium text-white">
           {badge}
         </span>
       )}
-      <span className="flex items-center justify-between gap-4">
-        <span className="text-[28px] leading-[1.15] sm:text-[36px]">{title}</span>
+      <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        <span className="text-[1.75rem] leading-[1.15] sm:text-[2.25rem]">{title}</span>
         <span className="flex items-center gap-3">
-          <span className="leading-[1.15] whitespace-nowrap">
-            <span className="text-[28px] sm:text-[36px]">{perMonth} </span>
-            <span className="text-[14px]">мес</span>
+          <span className="leading-[1.15] sm:whitespace-nowrap">
+            <span className="text-[1.75rem] sm:text-[2.25rem]">{perMonth} </span>
+            <span className="text-[0.875rem]">мес</span>
           </span>
           <img src={selected ? "/icons/radio-checked.svg" : "/icons/radio.svg"} alt="" width={32} height={32} />
         </span>
       </span>
       {price && (
-        <span className="mt-4 block text-[14px] leading-[1.15] font-medium whitespace-pre-wrap">
+        <span className="mt-4 block text-[0.875rem] leading-[1.15] font-medium whitespace-pre-wrap">
           <s className="text-hoffman-blue-tint">{oldPrice}</s>
           {"  "}
           {price}

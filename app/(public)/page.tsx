@@ -11,7 +11,7 @@ export default function LandingPage() {
   return (
     <>
       <SiteHeader tone="light" downloadHref={`#${DOWNLOAD_SECTION_ID}`} />
-      <main className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 outline-none">
         <Hero />
         <AboutSection />
         <FeaturesSection />

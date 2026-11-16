@@ -19,6 +19,34 @@
   }
 }
 
+/*
+ * Видимый фокус с клавиатуры для всех интерактивных элементов (WCAG 2.4.7).
+ * Цвет — hoffman-black; поверх фото (светлая шапка лендинга) переопределяется
+ * через --focus-ring. В @layer base, чтобы утилиты компонентов имели приоритет.
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--focus-ring, #000000);
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Область нажатия не меньше 44×44 без изменения внешнего вида: прозрачный
+ * ::before по центру элемента. Элементу нужно позиционирование (relative/absolute).
+ */
+@utility tap-target {
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -31,7 +59,7 @@ body {
 }
 .legal-body h2,
 .legal-body h3 {
-  font-size: 20px;
+  font-size: 1.25rem;
   line-height: 1.15;
   margin-top: 1.6em;
 }
@@ -46,4 +74,9 @@ body {
 .legal-body a {
   color: #921d19;
   text-decoration: underline;
+}
+
+/* Длинные слова и URL в документах не должны давать горизонтальную прокрутку на 320px. */
+.legal-body {
+  overflow-wrap: anywhere;
 }

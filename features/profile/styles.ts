@@ -3,7 +3,7 @@
 // client reference, а не строкой.
 
 const buttonBase =
-  "flex h-10 w-[212px] items-center justify-center rounded-[3px] px-4 text-[14px] leading-[1.15] font-medium tracking-[-0.56px] transition-colors disabled:opacity-60";
+  "tap-target relative flex min-h-10 w-[13.25rem] max-w-full items-center justify-center rounded-[3px] px-4 text-[0.875rem] leading-[1.15] font-medium tracking-[-0.56px] transition-colors disabled:opacity-60";
 
 /** Чёрная кнопка модалки (как SubmitButton из features/auth, но не submit). */
 export const primaryButtonClass = `${buttonBase} bg-hoffman-black text-hoffman-light-blue`;
@@ -13,4 +13,4 @@ export const secondaryButtonClass = `${buttonBase} border-[0.5px] border-hoffman
 
 /** Строка меню (Figma 1273:5841): 53px, текст `Text/h2` 20/28. */
 export const menuRowClass =
-  "group flex h-[53px] w-full items-center justify-between gap-4 rounded-[3px] p-[10px] text-left text-[20px] leading-[28px] text-hoffman-black";
+  "group flex min-h-[3.3125rem] w-full items-center justify-between gap-4 rounded-[3px] p-[10px] text-left [overflow-wrap:anywhere] hyphens-auto lg:hyphens-manual text-[1.25rem] leading-[1.75rem] text-hoffman-black";

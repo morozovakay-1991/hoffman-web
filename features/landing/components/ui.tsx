@@ -15,8 +15,8 @@ export function Accent({ children }: { children: ReactNode }) {
 export function SectionIntro({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[328px_minmax(0,1038px)] lg:gap-x-[26px]">
-      <p className="text-[14px] leading-[1.15] font-medium lg:pt-[17px]">{label}</p>
-      <h2 className="text-[32px] leading-[1.15] font-normal break-words lg:text-[56px] lg:leading-[64px]">{children}</h2>
+      <p className="text-[0.875rem] leading-[1.15] font-medium lg:pt-[17px]">{label}</p>
+      <h2 className="text-[2rem] leading-[1.15] font-normal break-words lg:text-[3.5rem] lg:leading-[4rem]">{children}</h2>
     </div>
   );
 }
@@ -38,16 +38,18 @@ const buttonVariants = {
 
 type ButtonLinkProps = Omit<ComponentProps<typeof Link>, "className"> & {
   variant: keyof typeof buttonVariants;
+  /** Только раскладка (ширина, выравнивание) — оформление задаёт `variant`. */
+  layoutClassName?: string;
   children: ReactNode;
 };
 
 /** Кнопка-ссылка из макета: 14px Medium, padding 12/24, radius 3, иконка 16px справа. */
-export function ButtonLink({ variant, children, ...props }: ButtonLinkProps) {
+export function ButtonLink({ variant, layoutClassName = "", children, ...props }: ButtonLinkProps) {
   const { className, icon } = buttonVariants[variant];
   return (
     <Link
       {...props}
-      className={`inline-flex shrink-0 items-center gap-2 rounded-[3px] px-6 py-3 text-[14px] leading-[1.15] font-medium whitespace-nowrap focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-hoffman-black ${className}`}
+      className={`tap-target relative inline-flex max-w-full shrink-0 items-center gap-2 rounded-[3px] px-6 py-3 text-[0.875rem] leading-[1.15] font-medium sm:whitespace-nowrap focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-2 focus-visible:outline-hoffman-black ${className} ${layoutClassName}`}
     >
       {children}
       {/* eslint-disable-next-line @next/next/no-img-element -- иконка SVG из макета */}

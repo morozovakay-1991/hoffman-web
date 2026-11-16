@@ -6,15 +6,15 @@ import { menuRowClass } from "../styles";
 /** Список `GET /legal-documents`; документ открывается на публичной странице /legal/{slug}. */
 export function LegalDocumentList({ documents }: { documents: LegalDocumentSummary[] }) {
   if (documents.length === 0) {
-    return <p className="text-[14px] leading-[1.5]">Документы пока не опубликованы</p>;
+    return <p className="text-[0.875rem] leading-[1.5]">Документы пока не опубликованы</p>;
   }
   return (
     <ul className="flex flex-col gap-8">
       {documents.map((document) => (
         <li key={document.slug}>
-          <Link href={`/legal/${encodeURIComponent(document.slug)}`} className={`${menuRowClass} hover:bg-white`}>
-            {document.title}
-            <ArrowIcon className="invisible group-hover:visible" />
+          <Link href={`/legal/${encodeURIComponent(document.slug)}`} className={`${menuRowClass} hover:bg-white focus-visible:bg-white`}>
+            <span className="min-w-0 break-words">{document.title}</span>
+            <ArrowIcon className="invisible group-hover:visible group-focus-visible:visible" />
           </Link>
         </li>
       ))}
