@@ -75,7 +75,7 @@ export function CodeInput({ value, onChange, error, errorId, disabled, tone = "d
   }
 
   return (
-    <div role="group" aria-label="Код из письма" className="flex justify-between gap-2">
+    <div role="group" aria-label="Код из письма" className="flex justify-between gap-1 sm:gap-2">
       {value.map((digit, index) => (
         <input
           key={index}
@@ -97,9 +97,9 @@ export function CodeInput({ value, onChange, error, errorId, disabled, tone = "d
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={handlePaste}
           onFocus={(e) => e.target.select()}
-          className={`h-[53px] w-full min-w-0 rounded-[3px] border-[0.5px] ${
+          className={`min-h-[3.3125rem] w-full min-w-[44px] rounded-[3px] border-[0.5px] ${
             tone === "onTint" ? "bg-white" : "bg-hoffman-light-blue"
-          } text-center text-[17px] leading-[1.4] text-hoffman-black outline-none ${
+          } text-center text-[1.0625rem] leading-[1.4] text-hoffman-black focus-visible:outline-offset-0 ${
             error ? "border-hoffman-fire" : "border-transparent focus:border-hoffman-black"
           }`}
         />

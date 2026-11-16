@@ -71,9 +71,9 @@ export function PersonalDataPanel({ profile }: { profile: Pick<Profile, "name" |
 function RowContent({ label, value }: { label: string; value?: ReactNode }) {
   return (
     <>
-      <span className="shrink-0">{label}</span>
+      <span className="min-w-0 max-w-full shrink-0 break-words">{label}</span>
       <span className="flex min-w-0 items-center gap-4">
-        {value && <span className="truncate text-[14px] leading-[1.5] text-hoffman-soft-black">{value}</span>}
+        {value && <span className="truncate text-[0.875rem] leading-[1.5] text-hoffman-soft-black">{value}</span>}
         <ArrowIcon className="invisible group-hover:visible group-focus-visible:visible" />
       </span>
     </>

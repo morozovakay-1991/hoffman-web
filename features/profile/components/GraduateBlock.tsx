@@ -26,20 +26,20 @@ export function GraduateBlock({ status, previousRequest }: Props) {
     // Подтверждённого состояния в веб-макете нет — текст как в мобильном (651:3747).
     return (
       <section className="flex flex-col gap-6 bg-hoffman-light-blue px-4 py-8" aria-label="Статус выпускника">
-        <p className="text-[20px] leading-[1.15] tracking-[-0.8px]">Выпускник Процесса Хоффмана</p>
-        <p className="text-[12px] leading-[1.15] tracking-[-0.48px]">Статус подтвержден</p>
+        <p className="text-[1.25rem] leading-[1.15] tracking-[-0.8px]">Выпускник Процесса Хоффмана</p>
+        <p className="text-[0.75rem] leading-[1.15] tracking-[-0.48px]">Статус подтвержден</p>
       </section>
     );
   }
 
   return (
     <section className="flex flex-col items-start gap-6 bg-hoffman-light-blue px-4 py-8" aria-label="Статус выпускника">
-      <h2 className="text-[20px] leading-[1.15] font-normal tracking-[-0.8px]">Выпускник Процесса Хоффмана?</h2>
-      <p className="max-w-[518px] text-[12px] leading-[1.15] tracking-[-0.48px]">{VERIFICATION_CTA}</p>
+      <h2 className="text-[1.25rem] leading-[1.15] font-normal tracking-[-0.8px]">Выпускник Процесса Хоффмана?</h2>
+      <p className="max-w-[518px] text-[0.75rem] leading-[1.15] tracking-[-0.48px]">{VERIFICATION_CTA}</p>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex h-7 w-[130px] items-center justify-center gap-2 rounded-[4px] border-[0.5px] border-hoffman-black bg-white pr-2 pl-4 text-[12px] leading-[1.15] font-medium tracking-[-0.48px]"
+        className="tap-target relative flex min-h-7 w-[8.125rem] max-w-full items-center justify-center gap-2 rounded-[4px] border-[0.5px] border-hoffman-black bg-white pr-2 pl-4 text-[0.75rem] leading-[1.15] font-medium tracking-[-0.48px]"
       >
         Начать
         <ArrowIcon />

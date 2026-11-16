@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { authApi } from "../api";
 import { AuthErrorText, commonErrorText, tooManyAttemptsWait } from "../messages";
 import type { ApiError } from "../types";
@@ -12,7 +12,16 @@ import {
   validatePasswordConfirmation,
 } from "../validation";
 import { CodeInput, emptyCode } from "./CodeInput";
-import { AuthHeading, FieldError, FormAlert, PasswordRequirements, SubmitButton, TextField, linkClass } from "./ui";
+import {
+  AuthHeading,
+  FieldError,
+  FormAlert,
+  PasswordRequirements,
+  SubmitButton,
+  TextField,
+  useFocusFirstInvalid,
+  linkClass,
+} from "./ui";
 
 /** Как в мобильном приложении: повторно запросить код можно через 59 секунд. */
 export const RESEND_COOLDOWN_SECONDS = 59;
@@ -52,8 +61,15 @@ export function ForgotPasswordFlow() {
   const [confirmation, setConfirmation] = useState("");
   const [errors, setErrors] = useState<Partial<Record<"email" | "code" | "password" | "confirmation" | "form", string>>>({});
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
   const [secondsLeft, restartCooldown] = useCountdown(RESEND_COOLDOWN_SECONDS);
   const codeErrorId = useId();
+  const doneLink = useRef<HTMLAnchorElement>(null);
+
+  // Форма последнего шага исчезает вместе с фокусом — переводим его на «Войти».
+  useEffect(() => {
+    if (step === "done") doneLink.current?.focus();
+  }, [step]);
 
   function goToEmail(emailError?: string) {
     setStep("email");
@@ -87,14 +103,18 @@ export function ForgotPasswordFlow() {
     event.preventDefault();
     const emailError = validateEmail(email);
     setErrors({ email: emailError });
-    if (!emailError) await requestCode();
+    if (emailError) focusInvalid();
+    else await requestCode();
   }
 
   async function submitCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const codeError = validateCode(code.join(""));
     setErrors({ code: codeError });
-    if (codeError) return;
+    if (codeError) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await authApi.verifyResetCode({ email: email.trim(), code: code.join("") });
@@ -122,7 +142,10 @@ export function ForgotPasswordFlow() {
       confirmation: passwordError ? undefined : validatePasswordConfirmation(password, confirmation),
     };
     setErrors(next);
-    if (next.password || next.confirmation) return;
+    if (next.password || next.confirmation) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await authApi.resetPassword({
@@ -151,7 +174,7 @@ export function ForgotPasswordFlow() {
 
   if (step === "email") {
     return (
-      <form noValidate onSubmit={submitEmail} className="flex flex-col gap-8">
+      <form ref={formRef} noValidate onSubmit={submitEmail} className="flex flex-col gap-8">
         <AuthHeading title="Сбросить пароль" subtitle="Мы отправим код для сброса пароля на ваш email" />
         <FormAlert message={errors.form} />
         <TextField
@@ -180,7 +203,7 @@ export function ForgotPasswordFlow() {
 
   if (step === "code") {
     return (
-      <form noValidate onSubmit={submitCode} className="flex flex-col gap-8">
+      <form ref={formRef} noValidate onSubmit={submitCode} className="flex flex-col gap-8">
         <AuthHeading title="Введите код" subtitle={`Мы отправили 6-значный код на ${email.trim()}`} />
         <FormAlert message={errors.form} />
         <CodeInput
@@ -201,9 +224,9 @@ export function ForgotPasswordFlow() {
         <SubmitButton loading={loading} ready={code.every(Boolean)}>
           Подтвердить
         </SubmitButton>
-        <div className="flex flex-col items-start gap-4">
+        <div className="flex flex-col items-start gap-[30px] lg:gap-4">
           {secondsLeft > 0 ? (
-            <p className="text-[13px] leading-[18px] text-hoffman-soft-black" aria-live="polite">
+            <p className="text-[0.8125rem] leading-[1.125rem] text-hoffman-soft-black">
               Отправить еще раз через {secondsLeft}с
             </p>
           ) : (
@@ -221,7 +244,7 @@ export function ForgotPasswordFlow() {
 
   if (step === "password") {
     return (
-      <form noValidate onSubmit={submitPassword} className="flex flex-col gap-8">
+      <form ref={formRef} noValidate onSubmit={submitPassword} className="flex flex-col gap-8">
         <AuthHeading title="Новый пароль" subtitle="Придумайте новый надежный пароль для вашего аккаунта" />
         <FormAlert message={errors.form} />
         <TextField
@@ -261,8 +284,9 @@ export function ForgotPasswordFlow() {
     <div className="flex flex-col gap-8">
       <AuthHeading title="Пароль изменен" subtitle="Теперь вы можете войти в свой аккаунт" />
       <Link
+        ref={doneLink}
         href="/login"
-        className="flex h-10 w-[212px] items-center justify-center rounded-[3px] bg-hoffman-black text-[14px] leading-[1.15] font-medium tracking-[-0.56px] text-hoffman-light-blue"
+        className="tap-target relative flex min-h-10 w-[13.25rem] max-w-full items-center justify-center rounded-[3px] bg-hoffman-black text-[0.875rem] leading-[1.15] font-medium tracking-[-0.56px] text-hoffman-light-blue"
       >
         Войти
       </Link>

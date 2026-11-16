@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { FormAlert, SubmitButton, TextField } from "@/features/auth/components/ui";
+import { FormAlert, SubmitButton, TextField, useFocusFirstInvalid } from "@/features/auth/components/ui";
 import { validateName } from "@/features/auth/validation";
 import { profileApi } from "../api";
 import { ProfileText, isSessionLost, profileErrorText } from "../messages";
@@ -23,12 +23,16 @@ export function EditNameDialog({ currentName, onClose, onSaved }: { currentName:
   const [error, setError] = useState<string>();
   const [formError, setFormError] = useState<string>();
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nameError = validateName(name);
     setError(nameError);
-    if (nameError) return;
+    if (nameError) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await profileApi.updateName(name.trim());
@@ -39,13 +43,16 @@ export function EditNameDialog({ currentName, onClose, onSaved }: { currentName:
       return;
     }
     if (isSessionLost(result.error)) router.replace("/login");
-    else if (result.error.code === "VALIDATION_ERROR" && result.error.fields.name) setError(ProfileText.checkField);
+    else if (result.error.code === "VALIDATION_ERROR" && result.error.fields.name) {
+      setError(ProfileText.checkField);
+      focusInvalid();
+    }
     else setFormError(profileErrorText(result.error));
   }
 
   return (
     <ProfileModal title="Имя пользователя" onClose={onClose} busy={loading} tallTitle>
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-[54px]">
+      <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-[54px]">
         <TextField
           label="Имя"
           hideLabel

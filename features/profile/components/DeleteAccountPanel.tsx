@@ -73,19 +73,19 @@ export function DeleteAccountPanel() {
 
   return (
     <>
-      <p className="max-w-[420px] text-[13px] leading-[18px] font-medium">
+      <p className="max-w-[420px] text-[0.8125rem] leading-[1.125rem] font-medium">
         Мы удалим ваш аккаунт и связанные данные. Некоторые данные могут храниться дольше по закону. Процесс может
         занять до 30 дней.
       </p>
       <div className="mt-[60px] flex flex-col items-start gap-4">
         <StatusMessage message={status} />
-        <button type="button" onClick={() => ask("later")} className={`${primaryButtonClass} w-[232px]`}>
+        <button type="button" onClick={() => ask("later")} className={`${primaryButtonClass} w-[14.5rem]`}>
           Запросить удаление данных
         </button>
-        <button type="button" onClick={() => ask("now")} className={`${secondaryButtonClass} w-[232px]`}>
+        <button type="button" onClick={() => ask("now")} className={`${secondaryButtonClass} w-[14.5rem]`}>
           Удалить аккаунт
         </button>
-        <Link href={LEGAL_LINKS.privacy.href} className="text-[12px] leading-[1.15] font-semibold text-hoffman-cherry underline">
+        <Link href={LEGAL_LINKS.privacy.href} className="tap-target relative text-[0.75rem] leading-[1.15] font-semibold text-hoffman-cherry underline">
           Политика конфиденциальности
         </Link>
       </div>

@@ -7,7 +7,7 @@ import { authApi } from "../api";
 import { AuthErrorText, commonErrorText } from "../messages";
 import { validateConsents, validateEmail, validateRequiredPassword } from "../validation";
 import { ConsentCheckboxes, type Consents } from "./ConsentCheckboxes";
-import { AuthHeading, FormAlert, SubmitButton, TextField, linkClass } from "./ui";
+import { AuthHeading, FormAlert, SubmitButton, TextField, useFocusFirstInvalid, linkClass } from "./ui";
 
 type Errors = { email?: string; password?: string; consents?: string; form?: string };
 
@@ -18,6 +18,7 @@ export function LoginForm({ initialError }: { initialError?: string }) {
   const [consents, setConsents] = useState<Consents>({ privacy: false, personalData: false });
   const [errors, setErrors] = useState<Errors>({ form: initialError });
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,7 +28,10 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       consents: validateConsents(consents),
     };
     setErrors(next);
-    if (next.email || next.password || next.consents) return;
+    if (next.email || next.password || next.consents) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await authApi.login({ email: email.trim(), password });
@@ -41,15 +45,17 @@ export function LoginForm({ initialError }: { initialError?: string }) {
     const { error } = result;
     if (error.code === "INVALID_CREDENTIALS") {
       setErrors({ password: AuthErrorText.invalidCredentials });
+      focusInvalid();
     } else if (error.code === "VALIDATION_ERROR" && error.fields.email) {
       setErrors({ email: AuthErrorText.emailInvalid });
+      focusInvalid();
     } else {
       setErrors({ form: commonErrorText(error) });
     }
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit} className="flex flex-col">
+    <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col">
       <AuthHeading title="Авторизация" subtitle="Пожалуйста, войдите в свой аккаунт" />
       <div className="mt-8 flex flex-col gap-8 lg:mt-16">
         <FormAlert message={errors.form} />

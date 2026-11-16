@@ -29,12 +29,15 @@ export function ProfileMenu() {
 
   return (
     <nav aria-label="Личный кабинет">
-      <ul className="flex flex-col gap-8">
+      <ul className="flex flex-col gap-2 lg:gap-8">
         {PROFILE_MENU.map((item) => {
           if (item.href === null) {
             return (
               <li key={item.label} className={menuRowClass}>
-                {item.label}
+                <span>
+                  {item.label}
+                  <span className="sr-only"> — раздел пока недоступен</span>
+                </span>
               </li>
             );
           }
@@ -47,7 +50,7 @@ export function ProfileMenu() {
                 className={`${menuRowClass} ${active ? "bg-hoffman-light-blue" : "hover:bg-hoffman-light-blue"}`}
               >
                 {item.label}
-                <ArrowIcon className={active ? "" : "invisible group-hover:visible"} />
+                <ArrowIcon className={active ? "" : "invisible group-hover:visible group-focus-visible:visible"} />
               </Link>
             </li>
           );

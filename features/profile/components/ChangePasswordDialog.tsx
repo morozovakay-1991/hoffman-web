@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { FormAlert, SubmitButton, TextField } from "@/features/auth/components/ui";
+import { FormAlert, SubmitButton, TextField, useFocusFirstInvalid } from "@/features/auth/components/ui";
 import { AuthErrorText } from "@/features/auth/messages";
 import {
   validateNewPassword,
@@ -26,6 +26,7 @@ export function ChangePasswordDialog({ onClose, onSaved }: { onClose: () => void
   const [values, setValues] = useState<Record<Field, string>>({ old: "", password: "", confirmation: "" });
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
 
   function update(field: Field, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -41,7 +42,10 @@ export function ChangePasswordDialog({ onClose, onSaved }: { onClose: () => void
       confirmation: passwordError ? undefined : validatePasswordConfirmation(values.password, values.confirmation),
     };
     setErrors(next);
-    if (next.old || next.password || next.confirmation) return;
+    if (next.old || next.password || next.confirmation) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await profileApi.updatePassword({ old_password: values.old, password: values.password });
@@ -51,16 +55,20 @@ export function ChangePasswordDialog({ onClose, onSaved }: { onClose: () => void
       return;
     }
     const { error } = result;
-    if (isSessionLost(error)) router.replace("/login");
-    else if (error.code === "INVALID_OLD_PASSWORD") setErrors({ old: ProfileText.invalidOldPassword });
+    if (isSessionLost(error)) {
+      router.replace("/login");
+      return;
+    }
+    if (error.code === "INVALID_OLD_PASSWORD") setErrors({ old: ProfileText.invalidOldPassword });
     else if (error.code === "VALIDATION_ERROR" && error.fields.password) setErrors({ password: AuthErrorText.passwordFormat });
     else if (error.code === "VALIDATION_ERROR" && error.fields.old_password) setErrors({ old: AuthErrorText.passwordRequired });
     else setErrors({ form: profileErrorText(error) });
+    focusInvalid();
   }
 
   return (
     <ProfileModal title="Пароль" onClose={onClose} busy={loading}>
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-[54px]">
+      <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-[54px]">
         <div className="flex flex-col gap-[54px]">
           <TextField
             label="Старый пароль"

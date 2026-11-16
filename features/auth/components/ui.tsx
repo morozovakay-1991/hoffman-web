@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useId, type InputHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
 import { PASSWORD_RULES } from "../validation";
 
 // Стили — из Figma (Mobile-app-UI, 1228:3404 — веб-экран входа; 961:1317 — состояния ошибок).
 
 /** Ссылка из макета (`link/Variant7`): 12px, cherry, подчёркнутая. */
-export const linkClass = "text-[12px] leading-[1.15] font-semibold text-hoffman-cherry underline";
+export const linkClass = "tap-target relative text-[0.75rem] leading-[1.15] font-semibold text-hoffman-cherry underline";
 
 /**
  * `onTint` — поле на светло-голубом фоне модалок личного кабинета (Figma 1252:12736,
@@ -16,8 +16,8 @@ export const linkClass = "text-[12px] leading-[1.15] font-semibold text-hoffman-
 export type FieldTone = "default" | "onTint";
 
 export const fieldToneClass: Record<FieldTone, string> = {
-  default: "bg-hoffman-light-blue text-[12px] leading-[1.15] tracking-[-0.48px]",
-  onTint: "bg-white text-[20px] leading-[28px]",
+  default: "bg-hoffman-light-blue text-[0.75rem] leading-[1.15] tracking-[-0.48px]",
+  onTint: "bg-white text-[1.25rem] leading-[1.75rem]",
 };
 
 type TextFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, "id"> & {
@@ -46,13 +46,13 @@ export function TextField({
 
   return (
     <div className="flex flex-col">
-      <div className={hideLabel ? "sr-only" : "flex h-10 items-center gap-1"}>
-        <label htmlFor={id} className="text-[12px] leading-[26px] font-medium">
+      <div className={hideLabel ? "sr-only" : "flex min-h-10 items-center gap-1"}>
+        <label htmlFor={id} className="text-[0.75rem] leading-[1.625rem] font-medium">
           {label}
         </label>
         {/* Звёздочка вне <label>, чтобы доступное имя поля оставалось «Email», а не «Email *». */}
         {required && !hideLabel && (
-          <span aria-hidden="true" className="text-[17px] leading-[1.4]">
+          <span aria-hidden="true" className="text-[1.0625rem] leading-[1.4]">
             *
           </span>
         )}
@@ -62,7 +62,7 @@ export function TextField({
         aria-required={required || undefined}
         aria-invalid={error ? true : undefined}
         aria-describedby={describedBy}
-        className={`h-[53px] w-full rounded-[3px] border-[0.5px] p-[10px] text-hoffman-black outline-none placeholder:text-hoffman-soft-black ${
+        className={`min-h-[3.3125rem] w-full rounded-[3px] border-[0.5px] p-[10px] text-hoffman-black placeholder:text-hoffman-soft-black focus-visible:outline-offset-0 ${
           hideLabel ? "" : "mt-[6px]"
         } ${fieldToneClass[tone]} ${
           error ? "border-hoffman-fire" : "border-transparent focus:border-hoffman-black"
@@ -70,7 +70,7 @@ export function TextField({
         {...props}
       />
       {hint && (
-        <div id={hintId} className="mt-2 text-[12px] leading-[1.15] text-hoffman-soft-black">
+        <div id={hintId} className="mt-2 text-[0.75rem] leading-[1.15] text-hoffman-soft-black">
           {hint}
         </div>
       )}
@@ -79,9 +79,10 @@ export function TextField({
   );
 }
 
+/** Текст ошибки поля: связан с полем через aria-describedby и озвучивается сразу (role="alert"). */
 export function FieldError({ id, children }: { id?: string; children: ReactNode }) {
   return (
-    <p id={id} className="mt-2 text-[12px] leading-[1.15] text-hoffman-fire">
+    <p id={id} role="alert" className="mt-2 text-[0.75rem] leading-[1.15] text-hoffman-fire">
       {children}
     </p>
   );
@@ -97,7 +98,7 @@ export function SubmitButton({ children, loading, ready = true }: { children: Re
       type="submit"
       disabled={loading}
       aria-busy={loading || undefined}
-      className={`flex h-10 w-[212px] items-center justify-center rounded-[3px] px-4 text-[14px] leading-[1.15] font-medium tracking-[-0.56px] transition-colors disabled:opacity-60 ${
+      className={`tap-target relative flex min-h-10 w-[13.25rem] max-w-full items-center justify-center rounded-[3px] px-4 text-[0.875rem] leading-[1.15] font-medium tracking-[-0.56px] transition-colors disabled:opacity-60 ${
         ready ? "bg-hoffman-black text-hoffman-light-blue" : "bg-hoffman-grey text-hoffman-black"
       }`}
     >
@@ -106,11 +107,25 @@ export function SubmitButton({ children, loading, ready = true }: { children: Re
   );
 }
 
+/**
+ * После неудачной отправки переводит фокус на первое поле с ошибкой — чтобы
+ * пользователь клавиатуры и скринридера сразу попал к ней. Фокус ставится в эффекте,
+ * т.е. после рендера с новыми ошибками (aria-invalid). `formRef` — на <form>.
+ */
+export function useFocusFirstInvalid() {
+  const formRef = useRef<HTMLFormElement>(null);
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (attempt) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [attempt]);
+  return [formRef, () => setAttempt((value) => value + 1)] as const;
+}
+
 /** Ошибка формы целиком (сеть, 429, вход через Apple/Google) — в стиле ошибок макета. */
 export function FormAlert({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p role="alert" className="text-[12px] leading-[1.15] text-hoffman-fire">
+    <p role="alert" className="text-[0.75rem] leading-[1.15] text-hoffman-fire">
       {message}
     </p>
   );
@@ -120,8 +135,8 @@ export function FormAlert({ message }: { message?: string }) {
 export function AuthHeading({ title, subtitle }: { title: string; subtitle?: ReactNode }) {
   return (
     <div className="flex flex-col gap-2 lg:gap-6">
-      <h1 className="text-[32px] leading-[1.15] font-normal break-words lg:text-[80px]">{title}</h1>
-      {subtitle && <p className="text-[12px] leading-[1.5] font-medium lg:ml-2 lg:text-[14px]">{subtitle}</p>}
+      <h1 className="text-[2rem] leading-[1.15] font-normal break-words hyphens-auto lg:text-[5rem] lg:hyphens-manual">{title}</h1>
+      {subtitle && <p className="text-[0.75rem] leading-[1.5] font-medium lg:ml-2 lg:text-[0.875rem]">{subtitle}</p>}
     </div>
   );
 }
@@ -146,9 +161,9 @@ export function PasswordRequirements({ password }: { password: string }) {
 /** «Нет аккаунта? Зарегистрируйтесь» (`checkbox/Variant4` в макете). */
 export function AuthSwitchPrompt({ question, action, href }: { question: string; action: string; href: string }) {
   return (
-    <p className="text-[12px] leading-[1.15]">
+    <p className="text-[0.75rem] leading-[1.15]">
       {question}{" "}
-      <Link href={href} className="font-medium text-hoffman-cherry underline">
+      <Link href={href} className="tap-target relative font-medium text-hoffman-cherry underline">
         {action}
       </Link>
     </p>

@@ -20,7 +20,9 @@ type Props = {
 export function ConsentCheckboxes({ value, onChange, error }: Props) {
   const errorId = useId();
   return (
-    <div className="flex flex-col gap-3">
+    // На мобильном строки через 20px, чтобы область нажатия чекбокса (44px) не
+    // наезжала на соседний; на десктопе — интервал макета и область 36px.
+    <div className="flex flex-col gap-5 lg:gap-3">
       <ConsentRow
         checked={value.privacy}
         hasError={Boolean(error)}
@@ -72,7 +74,7 @@ function ConsentRow({
           onChange={(e) => onChange(e.target.checked)}
           aria-invalid={hasError && !checked ? true : undefined}
           aria-describedby={hasError ? errorId : undefined}
-          className="absolute inset-0 size-6 cursor-pointer opacity-0"
+          className="absolute -top-[10px] -left-[10px] size-11 cursor-pointer opacity-0 lg:-top-[6px] lg:h-9"
         />
         <span
           aria-hidden="true"
@@ -82,7 +84,7 @@ function ConsentRow({
           style={{ mask: `url(${icon}) center / contain no-repeat`, WebkitMask: `url(${icon}) center / contain no-repeat` }}
         />
       </span>
-      <label htmlFor={id} className="text-[12px] leading-[1.15] text-hoffman-dark">
+      <label htmlFor={id} className="min-w-0 text-[0.75rem] leading-[1.15] text-hoffman-dark [overflow-wrap:anywhere]">
         {prefix}
         <Link href={link.href} className="font-semibold text-hoffman-cherry underline">
           {link.label}

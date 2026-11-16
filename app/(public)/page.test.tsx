@@ -29,7 +29,8 @@ describe("LandingPage", () => {
 
   it("шапка ведёт на регистрацию, вход и к блоку загрузки приложения", () => {
     renderLanding();
-    const nav = screen.getByRole("navigation", { name: "Основная навигация" });
+    // Первая — десктопная навигация; вторая — бургер-меню (CSS скрывает одну из них).
+    const [nav] = screen.getAllByRole("navigation", { name: "Основная навигация" });
     expect(within(nav).getByRole("link", { name: "Начать бесплатно" })).toHaveAttribute("href", "/register");
     expect(within(nav).getByRole("link", { name: "Войти" })).toHaveAttribute("href", "/login");
     expect(within(nav).getByRole("link", { name: "Скачать приложение" })).toHaveAttribute("href", "#download");
@@ -41,6 +42,19 @@ describe("LandingPage", () => {
     const { main } = renderLanding();
     expect(within(main).getByRole("link", { name: "Начать бесплатно" })).toHaveAttribute("href", "/register");
     expect(within(main).getByRole("link", { name: "Скачать приложение" })).toHaveAttribute("href", "#download");
+  });
+
+  it("«Возможности» — подписанный горизонтальный слайдер с четырьмя карточками, фокусируемый с клавиатуры", () => {
+    renderLanding();
+    // В jsdom нет раскладки, поэтому ScrollRegion остаётся в мобильном (прокручиваемом) состоянии.
+    const slider = screen.getByRole("region", { name: /Возможности приложения/ });
+    expect(slider).toHaveAttribute("tabindex", "0");
+    expect(within(slider).getAllByRole("heading", { level: 3 }).map((h) => h.textContent)).toEqual([
+      "Медитации",
+      "Инструменты",
+      "Статьи",
+      "Дневник",
+    ]);
   });
 
   it("в «Для всех» дневник отмечен как недоступный", () => {

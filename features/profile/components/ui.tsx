@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 // Стили — из Figma (Mobile-app-UI): личный кабинет 1273:5793, модалки 1252:12587,
 // 1254:12741, 1254:13256, 1254:12892, 1273:7235, 1273:7394.
@@ -25,7 +26,7 @@ export function ArrowIcon({ className = "", back = false }: { className?: string
  */
 export function ProfilePanel({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section aria-labelledby="profile-panel-title" className="relative isolate flex-1 px-6 pt-[54px] pb-[54px] lg:min-h-[742px]">
+    <section aria-labelledby="profile-panel-title" className="relative isolate flex-1 px-4 pt-[54px] pb-[54px] lg:min-h-[742px] lg:px-6">
       {/* eslint-disable-next-line @next/next/no-img-element -- декоративный фон из макета, растягивается на всю панель */}
       <img
         src="/images/profile/panel-bg.png"
@@ -33,9 +34,10 @@ export function ProfilePanel({ title, children }: { title: string; children: Rea
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 size-full object-cover opacity-20"
       />
-      <h1 id="profile-panel-title" className="text-[32px] leading-[28px] font-normal">
+      {/* h2: h1 страницы кабинета — «Личный кабинет» в layout, до блока выпускника и меню. */}
+      <h2 id="profile-panel-title" className="text-[2rem] leading-[1.75rem] font-normal break-words hyphens-auto lg:hyphens-manual">
         {title}
-      </h1>
+      </h2>
       <div className="mt-[73px] lg:max-w-[590px]">{children}</div>
     </section>
   );
@@ -47,7 +49,7 @@ export function ProfilePanel({ title, children }: { title: string; children: Rea
  */
 export function StatusMessage({ message, className = "" }: { message?: string; className?: string }) {
   return (
-    <p role="status" className={`text-[14px] leading-[1.5] empty:hidden ${className}`}>
+    <p role="status" className={`text-[0.875rem] leading-[1.5] empty:hidden ${className}`}>
       {message}
     </p>
   );
@@ -67,18 +69,28 @@ type ProfileModalProps = {
   children: ReactNode;
 };
 
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
  * Модалка кабинета: затемнение 50%, панель 700px на light-blue со «стеклом»,
  * крестик — иконка `AddRounded`, повёрнутая на 45° (Figma 1254:13561).
- * Esc и клик по затемнению закрывают её, фокус остаётся внутри.
+ * Рендерится в <body> через портал; остальная страница на это время `inert`.
+ * Esc и клик по затемнению закрывают её, фокус остаётся внутри, а после закрытия
+ * возвращается на кнопку, которая её открыла. На узких экранах (мобильного макета
+ * нет) панель во всю ширину с меньшими полями — чтобы 6 ячеек кода помещались в 320px.
  */
 export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, tallTitle = false, children }: ProfileModalProps) {
   const titleId = useId();
+  const subtitleId = useId();
+  const overlay = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   const busyRef = useRef(busy);
+  // Открывший модалку элемент запоминаем при первом рендере: к эффекту фокус уже
+  // забрало поле с autoFocus внутри модалки.
+  const [opener] = useState(() => (typeof document === "undefined" ? null : (document.activeElement as HTMLElement | null)));
+  const initialFocus = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     closeRef.current = onClose;
@@ -86,12 +98,17 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
   });
 
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
     const node = panel.current;
-    // autoFocus поля внутри модалки срабатывает раньше — не перебиваем его.
-    if (node && !node.contains(document.activeElement)) {
-      node.querySelectorAll<HTMLElement>(FOCUSABLE)[0]?.focus();
-    }
+    const root = overlay.current;
+    if (!node || !root) return;
+    // autoFocus поля внутри модалки срабатывает раньше — не перебиваем его
+    // (и возвращаемся к нему при повторном запуске эффекта в StrictMode).
+    if (node.contains(document.activeElement)) initialFocus.current = document.activeElement as HTMLElement;
+    const target = initialFocus.current?.isConnected ? initialFocus.current : node.querySelector<HTMLElement>(FOCUSABLE);
+    target?.focus();
+
+    const background = [...document.body.children].filter((el) => el !== root && !el.hasAttribute("inert"));
+    background.forEach((el) => el.setAttribute("inert", ""));
     const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
@@ -104,10 +121,10 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
         if (items.length === 0) return;
         const first = items[0];
         const last = items[items.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
+        if (event.shiftKey && (document.activeElement === first || !node.contains(document.activeElement))) {
           event.preventDefault();
           last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
+        } else if (!event.shiftKey && (document.activeElement === last || !node.contains(document.activeElement))) {
           event.preventDefault();
           first.focus();
         }
@@ -117,14 +134,16 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      background.forEach((el) => el.removeAttribute("inert"));
       document.body.style.overflow = overflow;
-      previous?.focus?.();
+      if (opener?.isConnected) opener.focus();
     };
-  }, []);
+  }, [opener]);
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 px-4 py-10 lg:pt-[167px]"
+      ref={overlay}
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 py-4 sm:px-4 sm:py-10 lg:pt-[167px]"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onClose();
       }}
@@ -134,7 +153,8 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-[700px] min-h-[476px] rounded-[5px] border-[0.5px] border-hoffman-light-blue bg-glass-tint px-6 pt-[67.5px] pb-[54px] text-hoffman-black backdrop-blur-[7.5px] sm:px-[54.5px]"
+        aria-describedby={subtitle ? subtitleId : undefined}
+        className="relative w-full max-w-[700px] min-h-[476px] rounded-[5px] border-[0.5px] border-hoffman-light-blue bg-glass-tint px-4 pt-[67.5px] pb-[54px] text-hoffman-black backdrop-blur-[7.5px] sm:px-[54.5px]"
       >
         {onBack && (
           <button
@@ -142,7 +162,7 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
             onClick={onBack}
             disabled={busy}
             aria-label="Назад"
-            className="absolute top-0 left-0 flex h-[34px] items-center pl-4 disabled:opacity-60"
+            className="tap-target absolute top-0 left-0 flex h-[34px] items-center pl-4 disabled:opacity-60 max-sm:size-11 max-sm:justify-center max-sm:pl-0"
           >
             <ArrowIcon back />
           </button>
@@ -152,7 +172,7 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
           onClick={onClose}
           disabled={busy}
           aria-label="Закрыть"
-          className="absolute top-0 right-0 flex size-[34px] items-center justify-center disabled:opacity-60"
+          className="tap-target absolute top-0 right-0 flex size-[34px] items-center justify-center disabled:opacity-60 max-sm:size-11"
         >
           {/* eslint-disable-next-line @next/next/no-img-element -- иконка SVG из макета */}
           <img src="/icons/add-rounded.svg" alt="" width={24} height={24} className="rotate-45" />
@@ -160,15 +180,20 @@ export function ProfileModal({ title, subtitle, onClose, onBack, busy = false, t
 
         <div className="flex flex-col gap-[54px]">
           <div className={`flex flex-col gap-8 ${tallTitle ? "min-h-[83px]" : ""}`}>
-            <h2 id={titleId} className="text-[36px] leading-[1.15] font-normal">
+            <h2 id={titleId} className="text-[2.25rem] leading-[1.15] font-normal break-words hyphens-auto sm:hyphens-manual">
               {title}
             </h2>
-            {subtitle && <div className="text-[14px] leading-[1.5]">{subtitle}</div>}
+            {subtitle && (
+              <div id={subtitleId} className="text-[0.875rem] leading-[1.5] [overflow-wrap:anywhere]">
+                {subtitle}
+              </div>
+            )}
           </div>
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

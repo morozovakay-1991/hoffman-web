@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ConsentCheckboxes, type Consents } from "@/features/auth/components/ConsentCheckboxes";
-import { FormAlert, SubmitButton, TextField } from "@/features/auth/components/ui";
+import { FormAlert, SubmitButton, TextField, useFocusFirstInvalid } from "@/features/auth/components/ui";
 import { validateConsents, validateName } from "@/features/auth/validation";
 import { CONTACTS } from "@/lib/site";
 import { profileApi } from "../api";
@@ -47,6 +47,7 @@ export function VerificationDialog({ previousRequest, onClose }: { previousReque
   const [consents, setConsents] = useState<Consents>({ privacy: false, personalData: false });
   const [errors, setErrors] = useState<Errors>({});
   const [loading, setLoading] = useState(false);
+  const [formRef, focusInvalid] = useFocusFirstInvalid();
 
   function update(field: Field, value: string) {
     setValues((prev) => ({ ...prev, [field]: value }));
@@ -63,7 +64,10 @@ export function VerificationDialog({ previousRequest, onClose }: { previousReque
     event.preventDefault();
     const next = validate(values, consents);
     setErrors(next);
-    if (Object.values(next).some(Boolean)) return;
+    if (Object.values(next).some(Boolean)) {
+      focusInvalid();
+      return;
+    }
 
     setLoading(true);
     const result = await profileApi.submitVerification({
@@ -86,6 +90,7 @@ export function VerificationDialog({ previousRequest, onClose }: { previousReque
         first_name: error.fields.first_name && ProfileText.checkField,
         phone: error.fields.phone && ProfileText.checkField,
       });
+      focusInvalid();
     } else {
       setErrors({ form: profileErrorText(error) });
     }
@@ -133,7 +138,7 @@ export function VerificationDialog({ previousRequest, onClose }: { previousReque
       onClose={close}
       busy={loading}
     >
-      <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-8">
+      <form ref={formRef} noValidate onSubmit={handleSubmit} className="flex flex-col gap-8">
         <FormAlert message={errors.form} />
         <TextField
           label="Фамилия"

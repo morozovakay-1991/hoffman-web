@@ -25,6 +25,17 @@ describe("LoginForm", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
+  it("пустая отправка: ошибки связаны с полями, озвучиваются, фокус на первом поле с ошибкой", async () => {
+    render(<LoginForm />);
+    await fillAndSubmit("", "", { consents: false });
+
+    const email = screen.getByLabelText("Email");
+    expect(email).toHaveAttribute("aria-invalid", "true");
+    expect(email).toHaveAccessibleDescription(/email/i);
+    expect(screen.getAllByRole("alert").length).toBeGreaterThanOrEqual(2);
+    expect(email).toHaveFocus();
+  });
+
   it("показывает ссылку «Забыли пароль?»", () => {
     render(<LoginForm />);
     expect(screen.getByRole("link", { name: "Забыли пароль?" })).toHaveAttribute("href", "/forgot-password");

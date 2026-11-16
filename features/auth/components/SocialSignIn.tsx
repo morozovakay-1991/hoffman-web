@@ -8,7 +8,7 @@ import type { SocialProvider } from "../types";
 export function SocialSignIn({ from }: { from: "login" | "register" }) {
   return (
     <div className="flex w-[125px] flex-col items-center gap-3">
-      <p className="text-[12px] leading-[1.15] text-hoffman-dark">Войти с</p>
+      <p className="text-[0.75rem] leading-[1.15] text-hoffman-dark">Войти с</p>
       <div className="flex w-full items-end justify-between">
         <SocialLink provider="apple" from={from}>
           <img src="/icons/apple.svg" alt="" width={30} height={36} />
@@ -26,7 +26,7 @@ function SocialLink({ provider, from, children }: { provider: SocialProvider; fr
     <a
       href={`/api/auth/${provider}/start?from=${from}`}
       aria-label={`Войти через ${PROVIDER_NAMES[provider]}`}
-      className="block rounded-[3px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-hoffman-black"
+      className="tap-target relative block rounded-[3px] focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-4 focus-visible:outline-hoffman-black"
     >
       {children}
     </a>
