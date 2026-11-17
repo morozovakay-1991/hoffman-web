@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { LegalDocumentList } from "@/features/profile/components/LegalDocumentList";
-import { listLegalDocuments } from "@/features/profile/server/legal";
+import { LegalDocumentList } from "@/features/legal/components/LegalDocumentList";
+import { listLegalDocuments } from "@/features/legal/server/legal";
 
 export const metadata: Metadata = { title: "Правовая информация — Hoffman" };
 

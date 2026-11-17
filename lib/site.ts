@@ -18,8 +18,6 @@ export const FOOTER_CONTACT_LINKS: SiteLink[] = [
 
 export const FOOTER_SECTION_LINKS: SiteLink[] = [
   { label: "О проекте", href: "/" },
-  { label: "Личный кабинет", href: "/dashboard" },
-  { label: "Тарифы", href: "/pricing" },
   // TODO: раздела FAQ на сайте пока нет.
   { label: "FAQ", href: null },
 ];
@@ -33,7 +31,3 @@ export const LEGAL_LINKS = {
   terms: { label: "Условия использования", href: "/legal/terms" },
   personalData: { label: "персональных данных", href: "/legal/personal-data" },
 } satisfies Record<string, SiteLink>;
-
-// TODO: ссылки на приложение в сторах не указаны в макете.
-export const APP_STORE_URL: string | null = null;
-export const GOOGLE_PLAY_URL: string | null = null;
