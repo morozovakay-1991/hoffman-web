@@ -1,10 +1,9 @@
-import { StoreBadges } from "@/components/layout/StoreBadges";
 import { Accent, SectionIntro, introColumnClass } from "./ui";
 
-/** Якорь блока — на него ведут «Скачать приложение» в шапке и в блоке «О приложении». */
+/** Якорь блока. */
 export const DOWNLOAD_SECTION_ID = "download";
 
-/** «Скачать приложение» (Figma 1313:5702): тонкие линии сверху и снизу, бейджи сторов. */
+/** «Скачать приложение» (Figma 1313:5702): тонкие линии сверху и снизу, «Скоро в App Store и Google Play». */
 export function DownloadSection() {
   return (
     <section
@@ -16,7 +15,7 @@ export function DownloadSection() {
         <Accent>Небольшой шаг,</Accent> который со временем <Accent>становится опорой.</Accent>
       </SectionIntro>
       <div className={`mt-[54px] flex flex-col gap-10 lg:flex-row lg:items-center ${introColumnClass}`}>
-        <StoreBadges tone="dark" stretch />
+        <p className="text-[1.75rem] leading-[2.125rem]">Скоро в App Store и Google Play</p>
         <p className="w-[300px] max-w-full text-[0.875rem] leading-[1.5]">
           Установите приложение и получите доступ <br className="hidden lg:inline" />к медитациям, статьям и
           инструментам.

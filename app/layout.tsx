@@ -9,7 +9,7 @@ const golosText = Golos_Text({
 
 export const metadata: Metadata = {
   title: "Hoffman",
-  description: "Hoffman — тарифы, вход и личный кабинет",
+  description: "Hoffman — ежедневная внутренняя работа в вашем кармане. Мобильное приложение для iOS и Android",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

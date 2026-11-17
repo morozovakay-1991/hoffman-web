@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { render, screen, within } from "@testing-library/react";
 import LandingPage from "./page";
 
 function renderLanding() {
@@ -18,7 +17,6 @@ describe("LandingPage", () => {
       "Возможности",
       /Начните с одной практики в день/,
       "Как устроен доступ",
-      /7 дней бесплатно, дальше на ваш выбор/,
     ]) {
       expect(within(main).getByRole("heading", { level: 2, name })).toBeInTheDocument();
     }
@@ -27,21 +25,22 @@ describe("LandingPage", () => {
     }
   });
 
-  it("шапка ведёт на регистрацию, вход и к блоку загрузки приложения", () => {
+  it("шапка — только лого", () => {
     renderLanding();
-    // Первая — десктопная навигация; вторая — бургер-меню (CSS скрывает одну из них).
-    const [nav] = screen.getAllByRole("navigation", { name: "Основная навигация" });
-    expect(within(nav).getByRole("link", { name: "Начать бесплатно" })).toHaveAttribute("href", "/register");
-    expect(within(nav).getByRole("link", { name: "Войти" })).toHaveAttribute("href", "/login");
-    expect(within(nav).getByRole("link", { name: "Скачать приложение" })).toHaveAttribute("href", "#download");
-    expect(document.getElementById("download")).toHaveTextContent("Скачать приложение");
-    expect(screen.getByRole("link", { name: "Hoffman — на главную" })).toHaveAttribute("href", "/");
+    const banner = screen.getByRole("banner");
+    const links = within(banner).getAllByRole("link");
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveAccessibleName("Hoffman — на главную");
+    expect(links[0]).toHaveAttribute("href", "/");
+    expect(screen.queryByRole("navigation", { name: "Основная навигация" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Меню" })).not.toBeInTheDocument();
   });
 
-  it("CTA блока «О приложении» ведут на регистрацию и к загрузке", () => {
+  it("в main нет CTA «Начать бесплатно» и «Скачать приложение», в блоке загрузки — «Скоро в App Store и Google Play»", () => {
     const { main } = renderLanding();
-    expect(within(main).getByRole("link", { name: "Начать бесплатно" })).toHaveAttribute("href", "/register");
-    expect(within(main).getByRole("link", { name: "Скачать приложение" })).toHaveAttribute("href", "#download");
+    expect(within(main).queryByRole("link", { name: "Начать бесплатно" })).not.toBeInTheDocument();
+    expect(within(main).queryByRole("link", { name: "Скачать приложение" })).not.toBeInTheDocument();
+    expect(within(document.getElementById("download")!).getByText("Скоро в App Store и Google Play")).toBeInTheDocument();
   });
 
   it("«Возможности» — подписанный горизонтальный слайдер с четырьмя карточками, фокусируемый с клавиатуры", () => {
@@ -62,44 +61,5 @@ describe("LandingPage", () => {
     const [forAll, forGraduates] = screen.getAllByRole("article");
     expect(within(forAll).getByText(/Дневник 100 дней/)).toHaveTextContent("— недоступно");
     expect(within(forGraduates).getByText(/Дневник 100 дней/)).not.toHaveTextContent("недоступно");
-  });
-});
-
-describe("LandingPage — тарифы", () => {
-  it("по умолчанию выбран годовой тариф, выбор месячного меняет условия продления", async () => {
-    const user = userEvent.setup();
-    renderLanding();
-    const year = screen.getByRole("radio", { name: /Год/ });
-    const month = screen.getByRole("radio", { name: /Месяц/ });
-    expect(year).toBeChecked();
-    expect(screen.getByText(/Далее 1200 ₽ \/ год\./)).toBeInTheDocument();
-
-    await user.click(month);
-    expect(month).toBeChecked();
-    expect(year).not.toBeChecked();
-    expect(screen.getByText(/Далее 150 ₽ \/ мес\./)).toBeInTheDocument();
-  });
-
-  it("«Попробовать 7 дней бесплатно» без согласий не уводит и показывает ошибку", () => {
-    renderLanding();
-    const cta = screen.getByRole("link", { name: "Попробовать 7 дней бесплатно" });
-    expect(cta).toHaveAttribute("href", "/register");
-
-    // fireEvent.click возвращает false, если переход отменён через preventDefault.
-    expect(fireEvent.click(cta)).toBe(false);
-    expect(screen.getByText("Примите условия чтобы продолжить")).toBeInTheDocument();
-  });
-
-  it("«Попробовать 7 дней бесплатно» с согласиями ведёт на регистрацию", async () => {
-    const user = userEvent.setup();
-    renderLanding();
-    await user.click(screen.getByLabelText("Я ознакомлен с политикой конфиденциальности"));
-    await user.click(screen.getByLabelText("Я согласен на обработку моих персональных данных"));
-
-    const cta = screen.getByRole("link", { name: "Попробовать 7 дней бесплатно" });
-    // Сам переход (Next.js <Link>) проверяется в e2e/landing.spec.ts — здесь только то, что страница его не блокирует.
-    await user.click(cta);
-    expect(screen.queryByText("Примите условия чтобы продолжить")).not.toBeInTheDocument();
-    expect(cta).toHaveAttribute("href", "/register");
   });
 });

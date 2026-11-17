@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getLegalDocument } from "@/features/profile/server/legal";
+import { getLegalDocument } from "@/features/legal/server/legal";
 
 export async function generateMetadata({ params }: PageProps<"/legal/[slug]">): Promise<Metadata> {
   const { title } = await getLegalDocument((await params).slug);

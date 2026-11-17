@@ -1,35 +1,27 @@
 import { test, expect } from "@playwright/test";
 
-test("лендинг: кнопка пробного периода ведёт на регистрацию после согласий", async ({ page }) => {
+test("лендинг: в шапке только лого, «Скоро в App Store и Google Play» в блоке загрузки и в футере, тарифов нет", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "hoffman" })).toBeVisible();
-
-  const cta = page.getByRole("link", { name: "Попробовать 7 дней бесплатно" });
-  await cta.click();
-  await expect(page.getByText("Примите условия чтобы продолжить")).toBeVisible();
-  await expect(page).toHaveURL(/\/$/);
-
-  await page.getByLabel("Я ознакомлен с политикой конфиденциальности").check();
-  await page.getByLabel("Я согласен на обработку моих персональных данных").check();
-  await cta.click();
-  await expect(page).toHaveURL(/\/register$/);
+  await expect(page.getByRole("banner").getByRole("link")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Меню" })).toHaveCount(0);
+  await expect(page.locator("#download").getByText("Скоро в App Store и Google Play")).toBeVisible();
+  const footer = page.getByRole("contentinfo");
+  await expect(footer.getByText("Скоро в App Store и Google Play")).toBeVisible();
+  await expect(footer.getByRole("link", { name: "Тарифы" })).toHaveCount(0);
 });
 
-test("лендинг: шапка ведёт на вход и регистрацию", async ({ page }) => {
+test("политика конфиденциальности открывается из футера", async ({ page }) => {
   await page.goto("/");
-  const nav = page.getByRole("navigation", { name: "Основная навигация" });
-
-  await nav.getByRole("link", { name: "Войти" }).click();
-  await expect(page).toHaveURL(/\/login$/);
-
-  await page.goto("/");
-  await page.getByRole("main").getByRole("link", { name: "Начать бесплатно" }).click();
-  await expect(page).toHaveURL(/\/register$/);
+  await page.getByRole("contentinfo").getByRole("link", { name: "Политика конфиденциальности" }).click();
+  await expect(page).toHaveURL(/\/legal\/privacy$/);
+  await expect(page.getByRole("heading", { level: 1, name: "Политика конфиденциальности" })).toBeVisible();
 });
 
-test("тарифы открываются из футера", async ({ page }) => {
+test("публичная оферта открывается в модалке из футера и закрывается по Esc", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("contentinfo").getByRole("link", { name: "Тарифы" }).click();
-  await expect(page).toHaveURL(/\/pricing$/);
-  await expect(page.getByRole("heading", { name: "Тарифы" })).toBeVisible();
+  await page.getByRole("contentinfo").getByRole("button", { name: "Публичная оферта" }).click();
+  const dialog = page.getByRole("dialog", { name: "Публичная оферта" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
 });

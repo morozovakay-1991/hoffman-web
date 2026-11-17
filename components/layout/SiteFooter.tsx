@@ -1,9 +1,10 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { CONTACTS, FOOTER_CONTACT_LINKS, FOOTER_SECTION_LINKS, LEGAL_LINKS, type SiteLink } from "@/lib/site";
-import { StoreBadges } from "./StoreBadges";
+import { OfferDialog } from "./OfferDialog";
 
 // Футер публичных страниц (Figma 1228:3421): копирайт, контакты, разделы,
-// юр. документы, бейджи App Store / Google Play.
+// юр. документы, «Скоро в App Store и Google Play».
 const footerLinkClass = "flex min-h-[44px] items-center [overflow-wrap:anywhere] hover:underline lg:tap-target lg:relative lg:inline lg:min-h-0";
 
 export function SiteFooter() {
@@ -15,9 +16,7 @@ export function SiteFooter() {
         <div className="flex flex-col lg:w-[298px]">
           <p className="text-[2rem] leading-[1.15] tracking-[-1.28px]">hoffman</p>
           <p className="mt-4">© 1991-{new Date().getFullYear()} Hoffman Institute International</p>
-          <div className="mt-[26px]">
-            <StoreBadges id="download-app" />
-          </div>
+          <p className="mt-[26px]">Скоро в App Store и Google Play</p>
         </div>
 
         <FooterList
@@ -32,7 +31,7 @@ export function SiteFooter() {
 
         <div className="flex flex-col gap-4 lg:w-[285px]">
           <p>Размещенные на сайте предложения и цены являются публичной офертой (Ст. 437, 494 ГК РФ).</p>
-          <FooterList ariaLabel="Документы" links={legal} />
+          <FooterList ariaLabel="Документы" links={legal} custom={{ [LEGAL_LINKS.offer.label]: <OfferDialog className={footerLinkClass} /> }} />
         </div>
       </div>
     </footer>
@@ -41,13 +40,15 @@ export function SiteFooter() {
 
 // На мобильном строки списка — 44px (цель нажатия), на десктопе — интервалы макета,
 // а область нажатия ссылки расширена прозрачным tap-target.
-function FooterList({ links, ariaLabel }: { links: SiteLink[]; ariaLabel: string }) {
+function FooterList({ links, ariaLabel, custom }: { links: SiteLink[]; ariaLabel: string; custom?: Record<string, ReactNode> }) {
   return (
     <nav aria-label={ariaLabel}>
       <ul className="flex flex-col lg:gap-4">
         {links.map((link) => (
           <li key={link.label} className="flex min-h-[44px] items-center lg:block lg:min-h-0">
-            {link.href === null ? (
+            {custom?.[link.label] ? (
+              custom[link.label]
+            ) : link.href === null ? (
               link.label
             ) : link.href.startsWith("/") ? (
               <Link href={link.href} className={footerLinkClass}>
